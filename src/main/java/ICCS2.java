@@ -43,7 +43,7 @@ public class ICCS2 {
 
 		GitService gitService = new GitServiceImpl();
 		Repository repo = gitService.cloneIfNotExists("tmp/" + GIT_REPO, "https://github.com/" + GIT_OWNER +"/"+ GIT_REPO);
-		
+
 		GitServiceBean gitServiceBean = new GitServiceBean();
 		gitServiceBean.setGit(Git.open(new File("tmp/" + GIT_REPO)));
 		gitServiceBean.setDirectory(new File("tmp/" + GIT_REPO));
@@ -54,7 +54,7 @@ public class ICCS2 {
 
 			Git git = gitServiceBean.getGit();
 			Project gitProject;
-			
+
 			Project project = null;
 			if (Objects.nonNull(project)) {
 				gitProject = project;
@@ -63,7 +63,7 @@ public class ICCS2 {
 				Project createdProject = new Project(GIT_REPO, GIT_OWNER+":"+GIT_REPO);
 				gitProject = createdProject;
 			}
-			
+
 			FilterRevCommits filterRevCommits = new FilterRevCommitsMavenProject();
 
 			Events lastAnalyzedEvent = null;
@@ -80,13 +80,12 @@ public class ICCS2 {
 
 			candidateRevCommitsForAnalysis = candidateRevCommitsForAnalysis.stream().filter(Objects::nonNull).sorted(Comparator.comparingInt(RevCommit::getCommitTime)).collect(Collectors.toList());
 			//candidateRevCommitsForAnalysis = filterOutRevCommitsWithTheSameCommitTime(candidateRevCommitsForAnalysis);
-			
+
 			List<RevCommit> revCommitsNew = new ArrayList<>();
 			for (int i = 0; i < candidateRevCommitsForAnalysis.size() - 1; i++)
 				if (candidateRevCommitsForAnalysis.get(i).getCommitTime() < candidateRevCommitsForAnalysis.get(i + 1).getCommitTime())
 					revCommitsNew.add(candidateRevCommitsForAnalysis.get(i));
 			candidateRevCommitsForAnalysis = revCommitsNew;
-			
 
 			List<RevCommit> revCommitsForAnalysis;
 			if (Objects.nonNull(lastAnalyzedEvent))
@@ -105,6 +104,14 @@ public class ICCS2 {
 			e.printStackTrace();
 		}
 		System.out.println(revCommits.size());
+	}
+
+	private static List<RevCommit> filterRevCommitStartingPoint(List<RevCommit> rcs, RevCommit startRevCommit) {
+		for (int i = 0; i < rcs.size(); i++)
+			if (Objects.equals(startRevCommit.getName(), rcs.get(i).getName()))
+				rcs = rcs.subList(i + 1, rcs.size());
+
+		return rcs;
 	}
 
 }
